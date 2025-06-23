@@ -7,3 +7,5 @@ openai
 assemblyai
 opencv-python
 pysubs2
+pytersseract
+pillow
