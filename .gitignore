@@ -24,3 +24,7 @@ frames/
 .mp4
 .json
 frames_output/
+data/
+videos/
+temp.py
+output/

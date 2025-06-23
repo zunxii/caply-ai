@@ -93,12 +93,22 @@ def energy_data(audio : bytes, transcription: json):
 
     return transcription
 
-def main():
-    audio_bytes = mp4_to_mp3_bytes("video.mp4")
-    audio_url = upload_to_assemblyai(audio_bytes)   
-    words = transcribe_audio_url(audio_url)            
-    transcription = save_to_json(words, "transcription.json")
+def process_video(video_path: str, output_json: str) -> list:
+    audio_bytes = mp4_to_mp3_bytes(video_path)
+    audio_url = upload_to_assemblyai(audio_bytes)
+    words = transcribe_audio_url(audio_url)
+    transcription = save_to_json(words, f"raw_{output_json}")
     transcription_with_energy = energy_data(audio_bytes, transcription)
-    save_to_json(transcription_with_energy, "transcription_with_energy.json")            
+    save_to_json(transcription_with_energy, output_json)
+    return transcription_with_energy
+
+def main():
+    print("🔄 Processing reference reel...")
+    reference_result = process_video("reference.mp4", "ref_transcription_with_energy.json")
+    
+    print("🔄 Processing input reel...")
+    input_result = process_video("video.mp4", "input_transcription_with_energy.json")
+
+    print("✅ Both transcriptions processed and saved.")           
 
 main()
