@@ -7,3 +7,6 @@ openai
 assemblyai
 opencv-python
 pysubs2
+requests
+librosa
+soundfile
