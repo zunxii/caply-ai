@@ -19,3 +19,7 @@ ENV/
 
 # Frames folder
 frames/
+
+.mp4
+.json
+frames_output/
