@@ -17,7 +17,8 @@ ENV/
 # JSON files
 *.json
 
-# Frames folder
+.mp3
+
 frames/
 
 .mp4
