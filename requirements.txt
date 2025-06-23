@@ -7,11 +7,10 @@ openai
 assemblyai
 opencv-python
 pysubs2
-<<<<<<< HEAD
 pytersseract
 pillow
-=======
 requests
 librosa
 soundfile
->>>>>>> 567f7d55fdee9d13c3c57518bd112442886c9b25
+easyocr
+language_tool_python
