@@ -7,10 +7,15 @@ __pycache__/
 venv/
 .venv/
 env/
-.env/
 ENV/
 .Python
 
 # Environment variable files
 .env
 .env.*
+
+# JSON files
+*.json
+
+# Frames folder
+frames/
