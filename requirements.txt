@@ -1,0 +1,9 @@
+ffmpeg-python
+numpy
+python-dotenv
+crewai
+crewai-tools
+openai
+assemblyai
+opencv-python
+pysubs2
