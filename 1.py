@@ -5,7 +5,6 @@ import json
 from io import BytesIO
 import io
 from typing import Generator
-import librosa
 import numpy as np
 import soundfile as sf
 from dotenv import load_dotenv
@@ -21,23 +20,23 @@ def mp4_to_mp3_bytes(input_path: str) -> bytes:
         '-i', input_path,
         '-f', 'mp3',
         '-acodec', 'libmp3lame',
-        '-vn',            
-        'pipe:1'          
+        '-vn',
+        'pipe:1'
     ]
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode != 0:
         raise Exception(f"FFmpeg error: {result.stderr.decode()}")
-    return result.stdout  
+    return result.stdout
 
 def read_in_chunks(data: bytes, chunk_size: int = 5242880) -> Generator[bytes, None, None]:
     for i in range(0, len(data), chunk_size):
         yield data[i:i + chunk_size]
+
 def upload_to_assemblyai(audio_bytes: bytes) -> str:
     headers = {
         "authorization": api_key,
         "transfer-encoding": "chunked"
     }
-
     response = requests.post(
         "https://api.assemblyai.com/v2/upload",
         headers=headers,
@@ -52,7 +51,6 @@ def transcribe_audio_url(audio_url: str) -> list:
         "authorization": api_key,
         "content-type": "application/json"
     }
-
     response = requests.post(
         "https://api.assemblyai.com/v2/transcript",
         headers=headers,
@@ -69,46 +67,44 @@ def transcribe_audio_url(audio_url: str) -> list:
             raise Exception(f"Transcription failed: {polling.json()['error']}")
         time.sleep(2)
 
-def save_to_json(data, output_path: str, encoding="utf-8"):
-    with open(output_path, 'w', encoding=encoding) as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-    return data
-
-def energy_data(audio : bytes, transcription: json):
+def energy_data(audio: bytes, transcription: list) -> list:
     audio_data, sample_rate = sf.read(io.BytesIO(audio))
     if audio_data.ndim > 1:
         audio_data = np.mean(audio_data, axis=1)
-    
+
     for word in transcription:
-        start_sec = word["start"] / 1000.0  # ms to seconds
+        start_sec = word["start"] / 1000.0
         end_sec = word["end"] / 1000.0
 
         start_sample = int(start_sec * sample_rate)
         end_sample = int(end_sec * sample_rate)
 
         word_audio = audio_data[start_sample:end_sample]
-
         energy = float(np.sqrt(np.mean(word_audio**2))) if len(word_audio) > 0 else 0.0
         word["energy"] = energy
 
     return transcription
 
-def process_video(video_path: str, output_json: str) -> list:
+def save_to_json(data: list, output_path: str):
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, 'w', encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+def process_video(video_path: str, output_filename: str):
     audio_bytes = mp4_to_mp3_bytes(video_path)
     audio_url = upload_to_assemblyai(audio_bytes)
     words = transcribe_audio_url(audio_url)
-    transcription = save_to_json(words, f"raw_{output_json}")
-    transcription_with_energy = energy_data(audio_bytes, transcription)
-    save_to_json(transcription_with_energy, output_json)
-    return transcription_with_energy
+    enhanced = energy_data(audio_bytes, words)
+    save_to_json(enhanced, os.path.join("data", output_filename))
 
 def main():
-    print("🔄 Processing reference reel...")
-    reference_result = process_video("reference.mp4", "ref_transcription_with_energy.json")
-    
-    print("🔄 Processing input reel...")
-    input_result = process_video("video.mp4", "input_transcription_with_energy.json")
+    print(" Processing reference reel...")
+    process_video("videos/reference1.mp4", "ref_transcription_with_energy.json")
 
-    print("✅ Both transcriptions processed and saved.")           
+    print(" Processing input reel...")
+    process_video("videos/video.mp4", "input_transcription_with_energy.json")
 
-main()
+    print(" Done. Only 2 files saved in /data")
+
+if __name__ == "__main__":
+    main()

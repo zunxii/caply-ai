@@ -11,7 +11,7 @@ load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
 
 FOLDER = "frames"
-OUTPUT = "all_frames.json"
+OUTPUT = "data/all_frames.json"
 MODEL = "gpt-4o"
 MAX_FRAMES = 85
 
@@ -51,20 +51,43 @@ def normalize_word(word_obj):
 
 def generate_prompt():
     return (
-        "You're a subtitle caption analyzer. From this image, extract all styled words as JSON.\n"
-        "Each word should follow this strict format:\n"
+        "You're an expert subtitle style extractor.\n\n"
+        "🧠 YOUR TASK:\n"
+        "From this image, analyze all **captioned words** on screen.\n"
+        "Each captioned word may differ in style. Extract every word **individually** with full styling.\n\n"
+        "===============================\n"
+        "📝 RETURN JSON in this exact format:\n"
         "{\n"
-        '  "text": "Hello",\n'
-        '  "font": "Poppins Bold",\n'
-        '  "font_size": 58,\n'
-        '  "color": "#FEE440",\n'
-        '  "bold": true,\n'
-        '  "italic": false,\n'
-        '  "outline": 2,\n'
-        '  "shadow": 1,\n'
-        '  "relative_position": [1, 2]  // line 1, second word\n'
+        "  \"words\": [\n"
+        "    {\n"
+        "      \"text\": \"Hello\",               // The exact visible text, preserve case\n"
+        "      \"font\": \"Montserrat Thin Italic\", // Include full font name including weight/style (e.g. Thin, Bold, SemiBold Italic)\n"
+        "      \"font_size\": 58,               // Font size as number only (no px)\n"
+        "      \"color\": \"#FEE440\",           // Primary font fill color in HEX (e.g. #FFFFFF)\n"
+        "      \"bold\": true,                  // True if bold or heavy\n"
+        "      \"italic\": true,                // True if italic, slanted, script, cursive\n"
+        "      \"outline\": 2,                  // Stroke thickness if visible (0 if none)\n"
+        "      \"shadow\": 1,                   // Shadow strength (0 if no shadow)\n"
+        "      \"relative_position\": [1, 2]    // Position on screen: [line_number, word_order_in_line]\n"
+        "    },\n"
+        "    ... more words ...\n"
+        "  ]\n"
         "}\n\n"
-        "Return a JSON object: { words: [...] }. NO explanations or markdown formatting."
+        "===============================\n"
+        "🎯 STRICT STYLE DETECTION RULES:\n"
+        "- ✅ Font must include family + weight + style if distinguishable (e.g., 'Poppins Bold Italic', 'Montserrat Thin')\n"
+        "- ✅ Italic, slanted, script, or cursive fonts → set `italic: true`\n"
+        "- ✅ Bold or heavy appearance → set `bold: true`\n"
+        "- ✅ Outline: count visible outer stroke size\n"
+        "- ✅ Shadow: any soft blur/drop shadow present (0 if none)\n"
+        "- ✅ Position: use [line number (1=top), word number in line]\n"
+        "- ✅ Font size: relative optical size if not pixel readable\n\n"
+        "===============================\n"
+        "📦 OUTPUT FORMAT:\n"
+        "- Return **raw JSON** only.\n"
+        "- No markdown, no prose, no explanation.\n"
+        "- Format must be valid JSON parsable by Python.\n\n"
+        "⚠️ VERY IMPORTANT: Only include visible, styled subtitle words from the image. Do not return background text, watermark, or logos."
     )
 
 def process_frames():

@@ -1,0 +1,42 @@
+You're given transcription with energy data:
+<<INPUT_TRANSCRIPTION>>
+
+Each word has:
+- text
+- start (ms)
+- end (ms)
+- energy (float between 0–1)
+
+====================================
+🎬 REEL-CENTRIC SUBTITLE CHUNKING
+====================================
+Create expressive chunks for **short-form vertical videos** (Instagram, Reels, TikTok). These subtitles must feel natural, rhythmic, and emotionally responsive.
+
+KEY RULES:
+• Preferred chunk size: 2–4 words (max 5)
+• NEVER isolate a single word unless for strong effect
+• Chunks must reflect speaking rhythm, emotional inflection, and visual pacing
+
+BREAK CHUNKS WHEN:
+✔️ Pause > 120ms (hard rule), OR even smaller (e.g. 10ms) if there's visible energy shift
+✔️ Significant energy dip/drop between words (e.g. 0.6 → 0.2)
+✔️ Punctuation: '.', '?', '!', ','
+✔️ Semantic change — new clause, emphasized point, call-to-action
+✔️ Word importance: isolate strong verbs/adjectives for effect
+✔️ Emotional impact: rising tone, urgency, suspense, curiosity
+
+NOTE:
+- Use start_time of **first word**, end_time of **last word**
+- Combine energy, semantic, and timing logic — don't rely on just one
+
+====================================
+🧾 FOR EACH CHUNK RETURN:
+====================================
+- chunk_text
+- start_time (ms)
+- end_time (ms)
+- words: list of word texts
+- mood: infer from context and energy (e.g. 'curious', 'intense', 'playful')
+- sentence_relation: 'start', 'middle', 'end', or 'standalone'
+
+Return a clean JSON array of chunks only. No markdown or prose.
