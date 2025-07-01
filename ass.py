@@ -1,7 +1,7 @@
 import subprocess
 
 ass_file = "output/styled_output.ass"
-input_video = "videos/video.mp4"
+input_video = "videos/video1.mp4"
 output_video = "final11.mp4"
 
 cmd = [
