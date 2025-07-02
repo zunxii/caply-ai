@@ -1,8 +1,8 @@
 import subprocess
 
-ass_file = "output/styled_output.ass"
-input_video = "videos/video1.mp4"
-output_video = "final11.mp4"
+ass_file = "output_subtitles.ass"
+input_video = "videos/mb_1_plain.mp4"
+output_video = "final_mb.mp4"
 
 cmd = [
     "ffmpeg",
